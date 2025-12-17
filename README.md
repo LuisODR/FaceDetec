@@ -1,73 +1,48 @@
-# React + TypeScript + Vite
+# 📸 React Face Biometry (Client-Side)
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Este projeto é uma Prova de Conceito (PoC) de um sistema de **validação biométrica facial** rodando inteiramente no navegador (Client-Side). 
 
-Currently, two official plugins are available:
+O objetivo foi criar uma interface de captura inteligente que detecta rostos em tempo real, fornece feedback visual ao usuário e persiste a imagem capturada simulando um fluxo de aplicação MPA (Multi-Page Application).
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## 🚀 Funcionalidades
 
-## React Compiler
+- **Detecção Facial em Tempo Real:** Utiliza Inteligência Artificial para identificar rostos via webcam sem enviar o vídeo para o servidor.
+- **Feedback Visual (UX):**
+  - 🔴 **Borda Vermelha:** Nenhum rosto detectado.
+  - 🟢 **Borda Verde:** Rosto detectado e centralizado.
+- **Captura Automática:** O sistema tira a foto automaticamente após validar a presença do rosto, com um delay de segurança para garantir a melhor pose.
+- **Persistência de Dados (MPA):** Salva a imagem (Base64) no `localStorage` para simular a passagem de dados entre páginas ou sessões.
+- **Performance:** Renderização otimizada usando `requestAnimationFrame` para não travar a UI durante o processamento da IA.
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## 🛠️ Tecnologias Utilizadas
 
-## Expanding the ESLint configuration
+- **[React](https://react.dev/) + [Vite](https://vitejs.dev/):** Estrutura do projeto e HMR rápido.
+- **[TypeScript](https://www.typescriptlang.org/):** Para tipagem estática e segurança do código.
+- **[Google MediaPipe Face Detection](https://developers.google.com/mediapipe):** Biblioteca oficial do Google para visão computacional.
+  - *Nota:* Optou-se pela implementação direta da biblioteca oficial em vez de "wrappers" de terceiros para garantir compatibilidade, performance e controle total sobre o fluxo de dados.
+- **[React Webcam](https://www.npmjs.com/package/react-webcam):** Gerenciamento do hardware de câmera.
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+## ⚙️ Como Funciona (Arquitetura)
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+### 1. O "Cérebro" (MediaPipe)
+Diferente de soluções que enviam imagens para o backend (lento e custoso), este projeto baixa um modelo leve de Machine Learning (`.wasm`) para o navegador. A detecção ocorre em milissegundos localmente.
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+### 2. O Fluxo de Detecção
+1. A webcam envia frames contínuos para um `<canvas>` invisível.
+2. O `CameraUtils` processa esses frames e os envia para a instância do `FaceDetection`.
+3. Se `detections.length > 0`, o estado da aplicação muda a borda para **Verde**.
+4. Um "debounce" lógico trava a captura para evitar fotos duplicadas.
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+### 3. Persistência (Simulação MPA)
+Para simular um cenário onde o usuário tira a foto em uma página e vê o resultado em outra (ou após um refresh), a imagem capturada é convertida em String Base64 e salva no `localStorage`.
+> **Cenário Real:** Em produção, essa string seria enviada via `FormData` para uma API de validação de identidade.
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+## 📦 Como Rodar o Projeto
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+- git clone
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+- npm install
+
+- npm run dev
+
+Acesse no navegador e permita o uso da câmera.
